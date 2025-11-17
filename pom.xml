@@ -88,4 +88,11 @@
             </plugin>
         </plugins>
     </build>
+    <distributionManagement>
+  <repository>
+    <id>address-book</id>
+    <url>http://192.168.49.1:8081/repository/address-book/</url>
+  </repository>
+</distributionManagement>
+
 </project>
