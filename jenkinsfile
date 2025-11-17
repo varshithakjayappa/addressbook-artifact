@@ -1,0 +1,48 @@
+#nexus
+pipeline {
+    agent any
+    tools {
+        jdk 'jdk-11'
+        maven 'mvn'
+    }
+    stages {
+        stage('git checkout') {
+            steps {
+                git 'https://github.com/varshithakjayappa/addressbook-artifact.git'
+            }
+        }
+        stage('mvn compile'){
+            steps{
+                sh 'mvn compile'
+            }
+        }
+        stage('mvn test'){
+            steps{
+                sh 'mvn test'
+            }
+        }
+        stage('mvn package'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage('nexus artifact'){
+            steps{
+            nexusArtifactUploader artifacts: [[artifactId: 'addressbook', classifier: '', file: 'target/addressbook-2.0.war', type: 'war']], credentialsId: 'nexus-id', groupId: 'com.vaadin.tutorial', nexusUrl: '192.168.49.1:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'address-book', version: '2.0'            }
+        }
+        stage('download war from nexus'){
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'nexus-id', usernameVariable: 'USR', passwordVariable: 'PWD')]) {
+                sh """
+              mkdir -p artifacts
+              curl -u ${USR}:${PWD} \
+             -o addressbook-2.0.war \
+             http://192.168.49.1:8081/repository/address-book/com/vaadin/tutorial/addressbook/2.0/addressbook-2.0.war
+                """
+              }
+
+                }
+            }
+        
+    }
+}
